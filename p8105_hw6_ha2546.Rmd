@@ -1,0 +1,52 @@
+---
+title: "p8105_hw6_ha2546"
+author: "Hana Akbarnejad"
+date: "11/27/2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+
+library(tidyverse)
+library(rvest)
+
+knitr::opts_chunk$set(
+	echo = TRUE,
+	warning = FALSE,
+	fig.width = 8, 
+  fig.height = 6,
+  out.width = "90%"
+)
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+set.seed(1)
+```
+
+## Load and clean data
+
+```{r}
+
+birthweight_data = read_csv("data/birthweight.csv") %>% 
+  rename_at(vars(starts_with ("b")), 
+  funs(str_replace(., "b", "baby_"))
+  ) %>% 
+  rename_at(vars(starts_with ("m")), 
+  funs(str_replace(., "m", "mother_"))
+  ) %>%
+  rename_all(
+  funs(str_replace(., "wt", "weight"))    
+  ) %>% 
+  rename(
+    father_race = frace,
+    family_income = fincome,
+    delivery_weight = delweight,
+    gestational_age = gaweeks,
+  )
+```
+
