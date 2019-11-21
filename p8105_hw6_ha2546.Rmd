@@ -134,23 +134,23 @@ cv_df =
   crossv_mc(birthweight_data, 100) 
 
 # conversting train and test lists to tibbles (I assume we don't have to because all lm???)
-# cv_df = cv_df %>%
-#   mutate(
-#     train = map(train, as_tibble),
-#     test = map(test, as_tibble)
-#     )
+cv_df = cv_df %>%
+  mutate(
+    train = map(train, as_tibble),
+    test = map(test, as_tibble)
+    )
 
 # obtaining RMSE of our models:
 cv_df = cv_df %>% 
   mutate(
     fit1  = map(train, ~lm(baby_weight ~ gestational_age + mother_delivery_age + pre_preg_bmi + weight_gain + smoken + family_income, data = .x)),
     model1  = map(train, ~lm(baby_weight ~ baby_length + gestational_age, data = .x)),
-    model2  = map(train, ~lm(baby_weight ~ baby_length + baby_head + baby_sex + baby_length * baby_head * baby_sex, data = .x)) %>% 
+    model2  = map(train, ~lm(baby_weight ~ baby_length + baby_head + baby_sex + baby_length * baby_head * baby_sex, data = .x))) %>% 
   mutate(
     rmse_fit1 = map2_dbl(fit1, test, ~rmse(model = .x, data = .y)),
     rmse_model1 = map2_dbl(model1, test, ~rmse(model = .x, data = .y)),
     rmse_model2 = map2_dbl(model2, test, ~rmse(model = .x, data = .y)))
-  )
+  
 
 ```
 
@@ -226,7 +226,7 @@ first, we should extract values of $\hat{\beta_0}$, $\hat{\beta_1}$, and  $\hat{
 
 boot_analysis = boot_straps %>% 
   mutate(
-    models = map(strap_sample, ~lm(tmax ~ tmin, data = weather_df) ),   
+    models = map(strap_sample, ~lm(tmax ~ tmin, data = .x) ),   
     results_coeff = map(models, broom::tidy), # to extract coefficients                     
     results_r2 = map(models, broom::glance) # to extract r^2
   ) %>%
