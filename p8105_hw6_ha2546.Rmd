@@ -234,6 +234,5 @@ boot_analysis = boot_straps %>%
   unnest() %>% 
   select(strap_number, term, estimate, r.squared) # selecting variables I'm gonna use
   
-  
 ```
 
