@@ -9,6 +9,8 @@ output: html_document
 
 library(tidyverse)
 library(rvest)
+library(modelr)
+library(mgcv)
 
 knitr::opts_chunk$set(
 	echo = TRUE,
@@ -43,10 +45,127 @@ birthweight_data = read_csv("data/birthweight.csv") %>%
   funs(str_replace(., "wt", "weight"))    
   ) %>% 
   rename(
+    baby_sex = baby_abysex,
     father_race = frace,
     family_income = fincome,
-    delivery_weight = delweight,
+    mother_delivery_weight = delweight,
     gestational_age = gaweeks,
+    malformation = mother_alform,
+    mother_menarche = mother_enarche,
+    mother_delivery_age= mother_omage,
+    past_live_birth = parity,
+    past_low_birth = pnumlbw,
+    past_small_birth = pnumsga,
+    pre_preg_bmi = ppbmi,
+    pre_preg_weight = ppweight,
+    weight_gain = weightgain
+  ) %>% 
+  mutate(
+    baby_sex = factor(baby_sex),
+    father_race = factor(father_race),
+    malformation = factor(malformation),
+    mother_race = factor(mother_race)
   )
+
+sum(is.na(birthweight_data))
+```
+
+factored the numeric
+renamed variables
+
+
+Firs, take a look at the distribution of birth weight:
+```{r}
+
+birthweight_data %>% 
+  ggplot(aes(x = baby_weight)) + geom_density()
+```
+Although a little skewed to the left, the data is normally distributed.
+
+Working on model:
+To build this model, I use a combination of backward model building and the information I obtained through a brief research on factors affecting birthweight.
+Variables I assume might be influential and I wan to start with: gestational age, mother delivery age, pre pregnancy BMI, mother's weight gain during pregnancy, number of cigarettes smoken during pregnancy, and family income.
+```{r}
+
+fit1 = birthweight_data %>% 
+  lm(baby_weight ~ gestational_age + mother_delivery_age + pre_preg_bmi + weight_gain + smoken + family_income, data = .) 
+
+fit1 %>% 
+  broom::tidy()
+```
+
+explaining model:
+##################
+
+plotting the residuals against fitted values:
+```{r}
+
+birthweight_data %>% 
+  add_residuals(fit1) %>% 
+  add_predictions(fit1) %>% 
+  ggplot(aes(x = pred, y = resid)) + geom_point() + geom_line(y = 0)
+```
+
+This is what we expect: residuals randomly distributed bouncing around zero.
+
+# comparisons
+
+first lets just see the models
+```{r}
+
+model1 = birthweight_data %>% 
+  lm(baby_weight ~ baby_length + gestational_age, data = .)
+
+model1 %>% 
+  broom::tidy()
+
+model2 = birthweight_data %>% 
+  lm(baby_weight ~ baby_length + baby_head + baby_sex + baby_length*baby_head*baby_sex, data = .)
+
+model2 %>% 
+  broom::tidy()
+```
+
+Automated CV using modelr...
+```{r}
+
+# train/test split using resampling
+cv_df = 
+  crossv_mc(birthweight_data, 100) 
+
+# conversting train and test lists to tibbles (I assume we don't have to because all lm???)
+# cv_df = cv_df %>%
+#   mutate(
+#     train = map(train, as_tibble),
+#     test = map(test, as_tibble)
+#     )
+
+# obtaining RMSE of our models:
+cv_df = cv_df %>% 
+  mutate(
+    fit1  = map(train, ~lm(baby_weight ~ gestational_age + mother_delivery_age + pre_preg_bmi + weight_gain + smoken + family_income, data = .x)),
+    model1  = map(train, ~lm(baby_weight ~ baby_length + gestational_age, data = .x)),
+    model2  = map(train, ~lm(baby_weight ~ baby_length + baby_head + baby_sex + baby_length * baby_head * baby_sex, data = .x)) %>% 
+  mutate(
+    rmse_fit1 = map2_dbl(fit1, test, ~rmse(model = .x, data = .y)),
+    rmse_model1 = map2_dbl(model1, test, ~rmse(model = .x, data = .y)),
+    rmse_model2 = map2_dbl(model2, test, ~rmse(model = .x, data = .y)))
+  )
+
+```
+
+I used RMSE as a way to compare these models, and the plot below shows the distribution of RMSE values for each candidate model (fit1, model1, model2):
+
+```{r}
+
+cv_df %>% 
+  select(starts_with("rmse")) %>% 
+  pivot_longer(
+    everything(),
+    names_to = "model", 
+    values_to = "rmse",
+    names_prefix = "rmse_") %>% 
+  mutate(model = fct_inorder(model)) %>% 
+  ggplot(aes(x = model, y = rmse)) + geom_violin()
 ```
 
