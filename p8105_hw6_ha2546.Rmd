@@ -248,22 +248,41 @@ boot_estimates = boot_analysis %>%
   mutate(
     log_coeff = log(beta0*beta1)
   )
+```
+
+Next step is graphing the distribution of our estimates that are obtained:
+
+```{r}
 
 # plotting the distribution of estimates:
 boot_estimates %>% 
-  ggplot(aes(x = log_coeff)) + geom_density()
+  ggplot(aes(x = log_coeff)) + geom_density() +
+  labs(
+    x = "log(beta0 * beta1)",
+    y = "Density",
+    title = "Distribution of log(beta0 * beta1) estimate, obtained from bootstrapping",
+    caption = "Results obtained from 5000 sample bootstrap"
+  )
 
 boot_estimates %>% 
-  ggplot(aes(x = log_coeff)) + geom_histogram(bins = 20)
-
-boot_estimates %>% 
-  ggplot(aes(x = r_squared)) + geom_density()
-
-boot_estimates %>% 
-  ggplot(aes(x = r_squared)) + geom_histogram(bins = 20)
+  ggplot(aes(x = r_squared)) + geom_density() +
+  labs(
+    x = "r-squared",
+    y = "Density",
+    title = "Distribution of r-squared estimate, obtained from bootstrapping",
+    caption = "Results obtained from 5000 sample bootstrap"
+  )
 ```
 
 #################### comment on distributions!
 
+In this part, I identified the 2.5% and 97.5% quantiles to provide a 95% confidence interval for $\hat{r}^2$ and $log(\hat{\beta_0} * \hat{\beta_1})$
 
+```{r}
 
+quantile(pull(boot_estimates, log_coeff), c(0.25, 0.75))
+
+quantile(pull(boot_estimates, r_squared), c(0.25, 0.75))
+```
+
+We can see that 95% confidence interval is (1.997025, 2.029787) for $log(\hat{\beta_0} * \hat{\beta_1})$ and (0.9056913 , 0.9171143) for $\hat{r}^2$.
