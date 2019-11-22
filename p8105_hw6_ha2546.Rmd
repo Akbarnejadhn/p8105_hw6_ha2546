@@ -108,7 +108,7 @@ birthweight_data %>%
   ggplot(aes(x = pred, y = resid)) + geom_point() + geom_line(y = 0)
 ```
 
-This is what we expect: residuals randomly distributed bouncing around zero.
+We can observe randomness which which shows homoscedasticity (constant variance) in residuals. This indicates that my model is correctly specified and there is no corrolation between residuals and fitted values. So, there is no need for transformations in my outcome or predictor, and that the linear model is working well, so, we do not need to consider higher order regression models. 
 
 # comparisons
 
