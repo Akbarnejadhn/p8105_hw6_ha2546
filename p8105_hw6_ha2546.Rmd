@@ -2,7 +2,9 @@
 title: "p8105_hw6_ha2546"
 author: "Hana Akbarnejad"
 date: "11/27/2019"
-output: github_document
+output:
+  github_document:
+   pandoc_args: --webtex
 ---
 
 ```{r setup, include=FALSE}
