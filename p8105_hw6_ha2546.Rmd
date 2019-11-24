@@ -74,9 +74,9 @@ birthweight_data = read_csv("data/birthweight.csv") %>%
 sum(is.na(birthweight_data))
 ```
 
-In this part, I loaded and cleaned the data. I renamed variables in a way that are more comprehendible, and factored the numeric variables. Using _is.na_ function, no missing values found in the datset. The _birthweight_data_ is a dataset of `r nrow(birthweight_data)` observations of `r ncol(birthweight_data)` variables that might be associated with babyweight, such as babies sex and height, race/ethnicity of parents, and informations about mother's age, weight, bmi, etc.
+In this part, I loaded and cleaned the data. I renamed variables in a way that are more comprehendible, and factored the numeric variables. Using _is.na_ function, and taking the sum, no missing values found in the datset. The _birthweight_data_ is a dataset of `r nrow(birthweight_data)` observations of `r ncol(birthweight_data)` variables that might be associated with babyweight, such as babies sex and height, race/ethnicity of parents, family income, and informations about mother's age, weight, bmi, etc, both pre pregnancy and at the time of delivery. The birthweight of babies that is our dependent variable of interest in these problems (response), has the mean of `r pull(birthweight_data, baby_weight) %>%  mean()` $\pm$ `r pull(birthweight_data, baby_weight) %>%  sd()` grams or `r pull(birthweight_data, baby_weight) %>%  mean() / 1000` $\pm$ `r pull(birthweight_data, baby_weight) %>%  sd() /1000` kilograms, with median of `r pull(birthweight_data, baby_weight) %>%  median()` gr (`r pull(birthweight_data, baby_weight) %>%  median()/1000` kg).
 
-The below density plot shows the distribution of birth weight:
+The below plots shows the distribution of birth weight:
 ```{r}
 
 birthweight_data %>% 
